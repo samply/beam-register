@@ -4,6 +4,7 @@ use crate::environment_variables::EnvironmentVariable;
 mod routes;
 mod environment_variables;
 mod beam_app;
+mod security;
 
 #[tokio::main]
 async fn main() {

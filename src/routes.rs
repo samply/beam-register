@@ -1,11 +1,13 @@
+use axum::{http::StatusCode, Json, Router, response::IntoResponse, middleware};
 use crate::beam_app::{BeamApp, BeamAppError};
-use axum::{http::StatusCode, Json, Router, response::IntoResponse};
+use crate::security::validate_api_key;
 
 // Function to set up routes
 pub fn create_router() -> Router {
     Router::new()
-        .route("/beam-app", axum::routing::post(post_beam_app))
-        .route("/beam-app", axum::routing::delete(delete_beam_app))
+        .route("/beam-app", axum::routing::post(post_beam_app))  // No need for middleware
+        .route("/beam-app", axum::routing::delete(delete_beam_app))  // No need for middleware
+        .layer(middleware::from_fn(validate_api_key))
 }
 
 // POST /beam-app handler
@@ -14,7 +16,7 @@ async fn post_beam_app(Json(payload): Json<BeamApp>) -> Result<String, axum::res
         Ok(_) => Ok(format!("Received POST with beam_id: {}", payload.beam_id.unwrap())),
         Err(e) => {
             let (status, message) = handle_error(e);
-            Err(send_error_response(status, message)) // Call the function to send the error response with message
+            Err(send_error_response(status, message)) // Return error response
         }
     }
 }
@@ -25,7 +27,7 @@ async fn delete_beam_app(Json(payload): Json<BeamApp>) -> Result<String, axum::r
         Ok(_) => Ok(format!("Received DELETE with beam_id: {}", payload.beam_id.unwrap())),
         Err(e) => {
             let (status, message) = handle_error(e);
-            Err(send_error_response(status, message)) // Call the function to send the error response with message
+            Err(send_error_response(status, message)) // Return error response
         }
     }
 }

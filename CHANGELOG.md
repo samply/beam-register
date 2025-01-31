@@ -9,3 +9,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - First version of the project
 - GitHub CI
 - REST services: POST and DELETE beam_app
+- Authorization ApiKey
