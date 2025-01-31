@@ -1,30 +1,54 @@
-use axum::{routing::get, Router, Json};
-use serde::{Deserialize, Serialize};
-
-// Define a simple data structure
-#[derive(Serialize, Deserialize)]
-pub struct Item {
-    pub id: u32,
-    pub name: String,
-}
-
-// Handler for a GET request
-pub async fn get_items() -> Json<Vec<Item>> {
-    let items = vec![
-        Item { id: 1, name: "Item 1".to_string() },
-        Item { id: 2, name: "Item 2".to_string() },
-    ];
-    Json(items)
-}
-
-// Handler for a POST request
-pub async fn create_item(Json(payload): Json<Item>) -> Json<Item> {
-    Json(payload)
-}
+use crate::beam_app::{BeamApp, BeamAppError};
+use axum::{http::StatusCode, Json, Router, response::IntoResponse};
 
 // Function to set up routes
 pub fn create_router() -> Router {
     Router::new()
-        .route("/items", get(get_items))
-        .route("/items", axum::routing::post(create_item))
+        .route("/beam-app", axum::routing::post(post_beam_app))
+        .route("/beam-app", axum::routing::delete(delete_beam_app))
+}
+
+// POST /beam-app handler
+async fn post_beam_app(Json(payload): Json<BeamApp>) -> Result<String, axum::response::Response> {
+    match payload.validate() {
+        Ok(_) => Ok(format!("Received POST with beam_id: {}", payload.beam_id.unwrap())),
+        Err(e) => {
+            let (status, message) = handle_error(e);
+            Err(send_error_response(status, message)) // Call the function to send the error response with message
+        }
+    }
+}
+
+// DELETE /beam-app handler
+async fn delete_beam_app(Json(payload): Json<BeamApp>) -> Result<String, axum::response::Response> {
+    match payload.is_valid_beam_id() {
+        Ok(_) => Ok(format!("Received DELETE with beam_id: {}", payload.beam_id.unwrap())),
+        Err(e) => {
+            let (status, message) = handle_error(e);
+            Err(send_error_response(status, message)) // Call the function to send the error response with message
+        }
+    }
+}
+
+// Helper function to map BeamAppError to StatusCode and message
+fn handle_error(error: BeamAppError) -> (StatusCode, String) {
+    match error {
+        BeamAppError::MissingBeamId => (
+            StatusCode::BAD_REQUEST,
+            "beam_id is missing".to_string(),
+        ),
+        BeamAppError::MissingBeamSecret => (
+            StatusCode::BAD_REQUEST,
+            "beam_secret is missing or empty".to_string(),
+        ),
+        BeamAppError::InvalidBeamIdFormat => (
+            StatusCode::BAD_REQUEST,
+            "beam_id contains invalid characters (only alphanumeric allowed)".to_string(),
+        ),
+    }
+}
+
+// Helper function to create a response with both status and error message
+fn send_error_response(status: StatusCode, message: String) -> axum::response::Response {
+    (status, Json(message)).into_response() // Return the response with the status and the message in JSON format
 }
