@@ -9,14 +9,9 @@ use strum_macros::EnumIter;
 pub enum EnvironmentVariable {
     BeamFilePath, // BEAM_FILE_PATH
     BeamAppKeyFormat, // BEAM_APP_KEY_FORMAT
-    BeamFileChangeCheckCronExpression, // BEAM_FILE_CHANGE_CHECK_CRON_EXPRESSION
-    BeamProxyContainerName, // BEAM_PROXY_CONTAINER_NAME
     Host,         // HOST
     Port,         // PORT
     ApiKey,       // API_KEY
-    DockerHost, // DOCKER_HOST . For Windows Docker Desktop: "tcp://localhost:2375" .
-    // If DockerHost is set, it will be preferred. If not, it is taken the DockerUnixSocket value.
-    DockerUnixSocket // DOCKER_UNIX_SOCKET. For Unix. Normally: "/var/run/docker.sock"
     // Add more environment variables as needed.
     // Remember that a variable MyExample must be set as MY_EXAMPLE in the environment variables
 }
@@ -50,8 +45,6 @@ impl EnvironmentVariable {
         defaults.insert(EnvironmentVariable::Host, "0.0.0.0".to_string());
         defaults.insert(EnvironmentVariable::Port, "3000".to_string());
         defaults.insert(EnvironmentVariable::BeamAppKeyFormat, "APP_{}_KEY".to_string());
-        defaults.insert(EnvironmentVariable::BeamFileChangeCheckCronExpression, "0 * * * * *".to_string());
-        defaults.insert(EnvironmentVariable::DockerUnixSocket, "/var/run/docker.sock".to_string());
         // Add default values for environment variables like here:
         defaults
     }
@@ -78,17 +71,6 @@ impl EnvironmentVariable {
         }
             .trim() // Trim any leading/trailing whitespace or newline characters
             .to_string()
-    }
-
-    // handle panics and return Option
-    pub fn catch_env_var(&self) -> Option<String> {
-        // Catch any panic during the call to get_env_var
-        let result = std::panic::catch_unwind(|| self.get_env_var());
-
-        match result {
-            Ok(value) => Some(value),   // Return the value if no panic occurred
-            Err(_) => None,             // Return None if panic occurred
-        }
     }
 
 }
