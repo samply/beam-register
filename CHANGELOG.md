@@ -11,3 +11,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - REST services: POST and DELETE beam_app
 - Authorization ApiKey
 - Register and unregister apps in beam (write env file)
+- Check changes in beam file job

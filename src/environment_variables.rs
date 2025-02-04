@@ -9,6 +9,7 @@ use strum_macros::EnumIter;
 pub enum EnvironmentVariable {
     BeamFilePath, // BEAM_FILE_PATH
     BeamAppKeyFormat, // BEAM_APP_KEY_FORMAT
+    BeamFileChangeCheckCronExpression, // BEAM_FILE_CHANGE_CHECK_CRON_EXPRESSION
     Host,         // HOST
     Port,         // PORT
     ApiKey,       // API_KEY
@@ -45,6 +46,7 @@ impl EnvironmentVariable {
         defaults.insert(EnvironmentVariable::Host, "0.0.0.0".to_string());
         defaults.insert(EnvironmentVariable::Port, "3000".to_string());
         defaults.insert(EnvironmentVariable::BeamAppKeyFormat, "APP_{}_KEY".to_string());
+        defaults.insert(EnvironmentVariable::BeamFileChangeCheckCronExpression, "0 * * * * *".to_string());
         // Add default values for environment variables like here:
         // defaults.insert(EnvironmentVariable::BeanFilePath, "/default/path".to_string()); // Example
         // Add more default values as needed
@@ -71,5 +73,7 @@ impl EnvironmentVariable {
                 }
             }
         }
+            .trim() // Trim any leading/trailing whitespace or newline characters
+            .to_string()
     }
 }
