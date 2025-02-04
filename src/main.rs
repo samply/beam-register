@@ -9,6 +9,7 @@ mod beam_app;
 mod security;
 mod app_register;
 mod check_changes_job;
+mod beam_proxy_reset;
 
 #[tokio::main]
 async fn main() {

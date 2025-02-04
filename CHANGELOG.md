@@ -13,3 +13,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Register and unregister apps in beam (write env file)
 - Check changes in beam file job
 - Logging with env logger
+- Beam Proxy Restarter

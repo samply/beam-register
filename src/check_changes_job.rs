@@ -1,11 +1,18 @@
 use crate::environment_variables::EnvironmentVariable;
-use log::{debug};
+use log::{debug, info, error};
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::hash::{Hash, Hasher};
 use tokio_cron_scheduler::{Job, JobScheduler};
+use crate::beam_proxy_reset::reset_beam_proxy;
+use once_cell::sync::Lazy; // Add this dependency to your Cargo.toml
+use tokio::sync::Mutex; // Use Tokio's async Mutex
 
-static mut LAST_CHECKSUM: Option<u64> = None;
+// Lazy static variable to hold the last checksum
+static LAST_CHECKSUM: Lazy<Mutex<u64>> = Lazy::new(|| {
+    let initial_checksum = calculate_checksum();
+    Mutex::new(initial_checksum)
+});
 
 pub async fn check_beam_file_changes_job() {
     // Create the job scheduler
@@ -44,17 +51,14 @@ async fn monitor_and_check() {
     let new_checksum = calculate_checksum();
 
     // Check for changes in checksum
-    unsafe {
-        if let Some(last_checksum) = LAST_CHECKSUM {
-            if new_checksum != last_checksum {
-                // File has changed, trigger Docker container restart
-                restart_beam_proxy().await;
-            }
-        }
-
-        // Update global checksum
-        LAST_CHECKSUM = Some(new_checksum);
+    let mut last_checksum = LAST_CHECKSUM.lock().await;
+    if *last_checksum != new_checksum {
+        // File has changed, trigger Docker container restart
+        restart_beam_proxy().await;
     }
+
+    // Update global checksum
+    *last_checksum = new_checksum;
 }
 
 fn calculate_checksum() -> u64 {
@@ -65,5 +69,9 @@ fn calculate_checksum() -> u64 {
 }
 
 async fn restart_beam_proxy() {
-    println!("Restarting beam proxy ...");
+    info!("Restarting beam proxy ...");
+    // Await the result of reset_beam_proxy() since it's an async function
+    if let Err(err) = reset_beam_proxy().await {
+        error!("Error restarting beam proxy: {}", err);
+    }
 }
