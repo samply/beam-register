@@ -1,9 +1,9 @@
-use tokio_cron_scheduler::{JobScheduler, Job};
+use crate::environment_variables::EnvironmentVariable;
+use log::{debug};
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::hash::{Hash, Hasher};
-use crate::environment_variables::EnvironmentVariable;
-
+use tokio_cron_scheduler::{Job, JobScheduler};
 
 static mut LAST_CHECKSUM: Option<u64> = None;
 
@@ -18,7 +18,7 @@ pub async fn check_beam_file_changes_job() {
     scheduler.add(
         Job::new_async(cron_expression, |uuid, mut l| {
             Box::pin(async move {
-                println!("Cron job triggered, checking file changes...");
+                debug!("Cron job triggered, checking file changes...");
 
                 // Trigger the job (e.g., check the file and possibly restart Docker)
                 monitor_and_check().await;
@@ -26,8 +26,8 @@ pub async fn check_beam_file_changes_job() {
                 // Query the next execution time for this job
                 let next_tick = l.next_tick_for_job(uuid).await;
                 match next_tick {
-                    Ok(Some(ts)) => println!("Next time for job is {:?}", ts),
-                    _ => println!("Could not get next tick for the job"),
+                    Ok(Some(ts)) => debug!("Next time for job is {:?}", ts),
+                    _ => debug!("Could not get next tick for the job"),
                 }
             })
         }).unwrap()
