@@ -25,7 +25,7 @@ pub async fn create_docker_client() -> Result<Docker, Box<dyn std::error::Error>
             info!("Docker host not set or empty, falling back to Unix socket.");
             let docker_unix_socket = EnvironmentVariable::DockerUnixSocket.get_env_var();
             info!("Using Docker Unix socket: {}", docker_unix_socket);
-            let client = Docker::connect_with_unix(&docker_unix_socket, 10, bollard::API_DEFAULT_VERSION)?;
+            let client = Docker::connect_with_unix(&docker_unix_socket, 180, bollard::API_DEFAULT_VERSION)?;
             *docker_client = Some(client.clone());
             return Ok(client);
         }
@@ -35,7 +35,7 @@ pub async fn create_docker_client() -> Result<Docker, Box<dyn std::error::Error>
 
     // If docker_host is provided and starts with "tcp://", connect to Docker via TCP
     if docker_host.starts_with("tcp://") {
-        let client = Docker::connect_with_http(&docker_host, 10, bollard::API_DEFAULT_VERSION)?;
+        let client = Docker::connect_with_http(&docker_host, 180, bollard::API_DEFAULT_VERSION)?;
         *docker_client = Some(client.clone());
         Ok(client)
     } else {

@@ -17,6 +17,6 @@ Suggestion:
 
 ```
 docker pull hello-world
-docker run --name dummy-container -d alpine sleep 3600
+docker run --name dummy-container -d --restart always alpine sh -c "echo 'Container started at: $(date)'; sleep 3600"
 export BEAM_PROXY_CONTAINER_NAME=dummy-container
 ```
