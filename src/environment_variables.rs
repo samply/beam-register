@@ -1,12 +1,14 @@
-use std::env;
 use std::collections::HashMap;
+use std::env;
 use std::fmt;
-use strum_macros::EnumIter; // For deriving EnumIter if needed in future iterations
+use strum_macros::EnumIter;
+// For deriving EnumIter if needed in future iterations
 
 // Step 1: Define Enum with variants (without default values directly inside)
 #[derive(Debug, Hash, Eq, PartialEq, EnumIter)] // Removed Display; custom implementation added
 pub enum EnvironmentVariable {
     BeamFilePath, // BEAM_FILE_PATH
+    BeamAppKeyFormat, // BEAM_APP_KEY_FORMAT
     Host,         // HOST
     Port,         // PORT
     ApiKey,       // API_KEY
@@ -42,6 +44,7 @@ impl EnvironmentVariable {
         let mut defaults = HashMap::new();
         defaults.insert(EnvironmentVariable::Host, "0.0.0.0".to_string());
         defaults.insert(EnvironmentVariable::Port, "3000".to_string());
+        defaults.insert(EnvironmentVariable::BeamAppKeyFormat, "APP_{}_KEY".to_string());
         // Add default values for environment variables like here:
         // defaults.insert(EnvironmentVariable::BeanFilePath, "/default/path".to_string()); // Example
         // Add more default values as needed
@@ -69,5 +72,4 @@ impl EnvironmentVariable {
             }
         }
     }
-
 }

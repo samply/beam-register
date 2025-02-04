@@ -5,6 +5,7 @@ mod routes;
 mod environment_variables;
 mod beam_app;
 mod security;
+mod app_register;
 
 #[tokio::main]
 async fn main() {
