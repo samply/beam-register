@@ -3,7 +3,7 @@ use std::sync::LazyLock;
 use clap::Parser;
 use config::Config;
 use tokio::net::TcpListener;
-use tracing::info;
+use tracing::{debug, info};
 use tracing_subscriber::util::SubscriberInitExt;
 
 mod routes;
@@ -22,6 +22,7 @@ async fn main() {
     let listener = TcpListener::bind(CONFIG.bind_addr).await.unwrap();
     info!("Server running at http://{}", CONFIG.bind_addr);
     
+    debug!(?CONFIG);
     // Use `axum::serve` to run the server
     axum::serve(listener, app).await.unwrap();
 
