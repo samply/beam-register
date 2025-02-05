@@ -1,14 +1,15 @@
 use tokio::fs::{File, OpenOptions};
-use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::io::{self, AsyncBufReadExt, AsyncSeekExt, AsyncWriteExt, BufReader};
 
 use crate::CONFIG;
 
 /// Registers an app by adding a line `BEAM_API_KEY_FORMAT` to the file.
 /// Returns `Ok(())` if successful, or an `Err` if an I/O error occurs.
 pub async fn register(app_id: String, app_secret: String) -> io::Result<()> {
-    let line_to_add = format!("{}='{}'\n",
-                              CONFIG.beam_app_key_format.replace("{}", &app_id),
-                              app_secret
+    let line_to_add = format!(
+        "{}='{}'\n",
+        CONFIG.beam_app_key_format.replace("{}", &app_id),
+        app_secret
     );
 
     let mut file = OpenOptions::new()
@@ -40,8 +41,8 @@ pub async fn unregister(app_id: String) -> io::Result<()> {
         .open(&CONFIG.beam_file_path)
         .await?;
 
+    // First, read the file and collect the filtered lines
     let reader = BufReader::new(&mut file);
-    // Collect all lines except the ones matching the `app_id`
     let key_to_match = CONFIG.beam_app_key_format.replace("{}", &app_id);
     let mut filtered_lines = Vec::new();
     let mut lines = reader.lines();
@@ -51,9 +52,16 @@ pub async fn unregister(app_id: String) -> io::Result<()> {
         }
     }
 
+    // Now, we truncate the file and write the filtered lines back
+    file.set_len(0).await?; // Clear the content of the file
+    file.seek(std::io::SeekFrom::Start(0)).await?; // Ensure we're writing from the beginning
+
     // Write the filtered lines back to the file
-    file.set_len(0).await?;
-    file.write_all((filtered_lines.join("\n") + "\n").as_bytes()).await?;
+    if !filtered_lines.is_empty() {
+        file.write_all((filtered_lines.join("\n") + "\n").as_bytes())
+            .await?;
+    }
+
     Ok(())
 }
 
