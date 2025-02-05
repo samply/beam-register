@@ -7,11 +7,8 @@ edition = "2021"
 axum = "0.8"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
-strum = "0.26"
-strum_macros = "0.26"
-regex = "1.11"
-lazy_static = "1.5"
-futures = "0.3"
-tokio-stream = { version = "0.1", features = ["io-util"] }
-log = "0.4"
-env_logger = "0.11"
+regex = "1"
+
+tracing = "0.1"
+tracing-subscriber = "0.3"
+clap = { version = "4.5", features = ["env", "derive"] }
