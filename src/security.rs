@@ -4,7 +4,8 @@ use axum::{
     response::{IntoResponse, Response},
     middleware::Next,
 };
-use crate::environment_variables::EnvironmentVariable;
+
+use crate::CONFIG;
 
 // Middleware function to validate the API key
 pub async fn validate_api_key(req: Request<Body>, next: Next) -> Result<Response, Response> {
@@ -12,7 +13,7 @@ pub async fn validate_api_key(req: Request<Body>, next: Next) -> Result<Response
     if let Some(auth_header) = req.headers().get(header::AUTHORIZATION) {
         if let Ok(auth_value) = auth_header.to_str() {
             if let Some(api_key) = auth_value.strip_prefix("ApiKey ") {
-                if api_key == EnvironmentVariable::ApiKey.get_env_var() {
+                if api_key == CONFIG.api_key {
                     return Ok(next.run(req).await);
                 }
             }

@@ -1,44 +1,38 @@
-use serde::{Deserialize, Serialize};
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub struct BeamApp {
-    pub beam_id: Option<String>,
-    pub beam_secret: Option<String>,
+pub struct BeamAppPost {
+    pub beam_id: BeamAppName,
+    pub beam_secret: String,
 }
 
-#[derive(Debug)]
-pub enum BeamAppError {
-    MissingBeamId,
-    MissingBeamSecret,
-    InvalidBeamIdFormat,
+#[derive(Serialize, Deserialize)]
+pub struct BeamAppDelete {
+    pub beam_id: BeamAppName,
 }
 
-impl BeamApp {
+#[derive(Serialize)]
+pub struct BeamAppName(String);
 
-    // Validate if the beam_id is valid (only alphanumeric, underscores, and dashes)
-    pub fn is_valid_beam_id(&self) -> Result<(), BeamAppError> {
-        match &self.beam_id {
-            Some(id) => {
-                let re = Regex::new(r"^[a-zA-Z0-9]+$").unwrap();
-                if re.is_match(id) {
-                    Ok(())
-                } else {
-                    Err(BeamAppError::InvalidBeamIdFormat)
-                }
-            }
-            None => Err(BeamAppError::MissingBeamId),
-        }
+impl std::ops::Deref for BeamAppName {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
+}
 
-    // Validate both beam_id and beam_secret
-    pub fn validate(&self) -> Result<(), BeamAppError> {
-        self.is_valid_beam_id()?;
-        match &self.beam_secret {
-            Some(secret) if !secret.is_empty() => Ok(()),
-            Some(_) => Err(BeamAppError::MissingBeamSecret),
-            None => Err(BeamAppError::MissingBeamSecret),
-        }
+impl<'de> Deserialize<'de> for BeamAppName {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let re = Regex::new(r"^[a-zA-Z0-9]+$").unwrap();
+        <String>::deserialize(deserializer).and_then(|v| if re.is_match(&v) {
+            Ok(v)
+        } else {
+            Err(serde::de::Error::custom("Value does not match ^[a-zA-Z0-9]+$"))
+        }).map(Self)
     }
-
 }
