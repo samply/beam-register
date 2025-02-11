@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  beam-register:
+    container_name: beam-register
+    #image: samply/beam-register:latest
+    image: beam-register
+    environment:
+      API_KEY: "${BEAM_REGISTER_API_KEY}"
+      BEAM_FILE_PATH: "/app/dso-proxy-users"
+      RUST_LOG: "${BEAM_REGISTER_LOG_LEVEL:-info}"
+      BEAM_FILE_CHANGE_CHECK_CRON_EXPRESSION: "0 * * * * *"
+      BEAM_PROXY_CONTAINER_NAME: "dummy-container"
+    volumes:
+      - ./users.env:/app/dso-proxy-users
+      - /var/run/docker.sock:/var/run/docker.sock
+      #- ./docker-compose.yml:/app/docker-compose.yml
+
+  dummy-container:
+    container_name: dummy-container
+    image: alpine
+    command: |
+      sh -c "echo 'Container started at: $(date)'; sleep 3600"
+    restart: always
