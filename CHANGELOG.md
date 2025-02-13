@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.1.0 - 2025-02-06]
+## [0.1.0 - 2025-02-13]
 ### Added
 - First version of the project
 - GitHub CI
@@ -13,4 +13,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Register and unregister apps in beam (write env file)
 - Logging with traicing
 - Info service
+- Readme
 
